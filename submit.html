@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit a Letter - Reason and Rage</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .submit-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .form-section {
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input[type="text"],
+        input[type="date"] {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+
+        .editor-toolbar {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 0.5rem;
+            padding: 0.75rem;
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            border-bottom: none;
+            border-radius: 4px 4px 0 0;
+        }
+
+        .toolbar-btn {
+            padding: 0.5rem 1rem;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.2s;
+        }
+
+        .toolbar-btn:hover {
+            background-color: #f0f0f0;
+        }
+
+        .editor-wrapper {
+            position: relative;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 400px;
+            padding: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 0 0 4px 4px;
+            font-size: 1rem;
+            font-family: 'Courier New', monospace;
+            line-height: 1.6;
+            resize: vertical;
+        }
+
+        .markdown-help {
+            background-color: #f9f9f9;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .markdown-help code {
+            background-color: #e8e8e8;
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-size: 0.85em;
+        }
+
+        .submit-btn {
+            background-color: #1a1a1a;
+            color: #fff;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 4px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            width: 100%;
+        }
+
+        .submit-btn:hover {
+            background-color: #333;
+        }
+
+        .submit-btn:disabled {
+            background-color: #999;
+            cursor: not-allowed;
+        }
+
+        .message {
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .instructions {
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .instructions h2 {
+            margin-bottom: 1rem;
+            color: #1a1a1a;
+        }
+
+        .instructions ul {
+            margin-left: 1.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .instructions li {
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Reason and Rage</h1>
+            <p class="subtitle">Letters to Congress in response to current events</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="submit-container">
+            <section class="instructions">
+                <h2>How to Submit a Letter</h2>
+                <p>Submit your letter to Congress through this form. Your submission will be reviewed and, if approved, published on this site.</p>
+                <ul>
+                    <li>Write your letter in the editor below</li>
+                    <li>Use the toolbar buttons to format your text (bold, italic, lists, etc.)</li>
+                    <li>Provide a clear title and the date of your letter</li>
+                    <li>Click "Submit Letter" to create a pull request on GitHub</li>
+                    <li>Your letter will be reviewed before being published</li>
+                </ul>
+            </section>
+
+            <div id="message" class="message"></div>
+
+            <form id="letterForm" class="form-section">
+                <div class="form-group">
+                    <label for="title">Letter Title *</label>
+                    <input type="text" id="title" name="title" required placeholder="e.g., End Federal Law Enforcement Violence">
+                </div>
+
+                <div class="form-group">
+                    <label for="date">Date *</label>
+                    <input type="date" id="date" name="date" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="content">Letter Content *</label>
+                    <div class="editor-toolbar">
+                        <button type="button" class="toolbar-btn" data-action="bold" title="Bold">B</button>
+                        <button type="button" class="toolbar-btn" data-action="italic" title="Italic">I</button>
+                        <button type="button" class="toolbar-btn" data-action="ul" title="Bullet List">• List</button>
+                        <button type="button" class="toolbar-btn" data-action="paragraph" title="New Paragraph">¶</button>
+                    </div>
+                    <div class="editor-wrapper">
+                        <textarea id="content" name="content" required placeholder="Write your letter here..."></textarea>
+                    </div>
+                    <div class="markdown-help">
+                        <strong>Formatting Tips:</strong> Use <code>**text**</code> for <strong>bold</strong>, <code>*text*</code> for <em>italic</em>, and <code>- item</code> for bullet lists. Or use the toolbar buttons above.
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn" id="submitBtn">Submit Letter</button>
+            </form>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 Reason and Rage. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Set today's date as default
+        document.getElementById('date').valueAsDate = new Date();
+
+        // Toolbar button handlers
+        const toolbarButtons = document.querySelectorAll('.toolbar-btn');
+        const textarea = document.getElementById('content');
+
+        toolbarButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const action = btn.dataset.action;
+                const start = textarea.selectionStart;
+                const end = textarea.selectionEnd;
+                const selectedText = textarea.value.substring(start, end);
+                let replacement = '';
+
+                switch(action) {
+                    case 'bold':
+                        replacement = selectedText ? `**${selectedText}**` : '**bold text**';
+                        break;
+                    case 'italic':
+                        replacement = selectedText ? `*${selectedText}*` : '*italic text*';
+                        break;
+                    case 'ul':
+                        if (selectedText) {
+                            const lines = selectedText.split('\n').filter(l => l.trim());
+                            replacement = lines.map(l => `- ${l.trim()}`).join('\n');
+                        } else {
+                            replacement = '- List item';
+                        }
+                        break;
+                    case 'paragraph':
+                        replacement = selectedText ? `\n\n${selectedText}\n\n` : '\n\n';
+                        break;
+                }
+
+                textarea.value = textarea.value.substring(0, start) + replacement + textarea.value.substring(end);
+                textarea.focus();
+                const newPos = start + replacement.length;
+                textarea.setSelectionRange(newPos, newPos);
+            });
+        });
+
+        // Form submission
+        document.getElementById('letterForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const messageDiv = document.getElementById('message');
+            
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+            messageDiv.style.display = 'none';
+
+            const formData = {
+                title: document.getElementById('title').value,
+                date: document.getElementById('date').value,
+                content: document.getElementById('content').value
+            };
+
+            try {
+                const response = await fetch('/api/submit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    messageDiv.className = 'message success';
+                    messageDiv.textContent = `Success! Your letter has been submitted. View the pull request: ${result.pr_url || 'Check GitHub'}`;
+                    messageDiv.style.display = 'block';
+                    document.getElementById('letterForm').reset();
+                    document.getElementById('date').valueAsDate = new Date();
+                } else {
+                    throw new Error(result.error || 'Failed to submit letter');
+                }
+            } catch (error) {
+                messageDiv.className = 'message error';
+                messageDiv.textContent = `Error: ${error.message}`;
+                messageDiv.style.display = 'block';
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Letter';
+            }
+        });
+    </script>
+</body>
+</html>

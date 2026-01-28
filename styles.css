@@ -1,0 +1,151 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #fafafa;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+header {
+    background-color: #1a1a1a;
+    color: #fff;
+    padding: 3rem 0;
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    font-weight: 700;
+}
+
+.subtitle {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    font-weight: 300;
+}
+
+main {
+    margin-bottom: 4rem;
+}
+
+.intro {
+    background-color: #fff;
+    padding: 2rem;
+    border-radius: 8px;
+    margin-bottom: 3rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    text-align: center;
+    font-size: 1.1rem;
+    color: #555;
+}
+
+.letters {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.letter {
+    background-color: #fff;
+    padding: 2.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: box-shadow 0.3s ease;
+}
+
+.letter:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.letter h2 {
+    font-size: 1.8rem;
+    margin-bottom: 0.5rem;
+    color: #1a1a1a;
+    border-bottom: 2px solid #e0e0e0;
+    padding-bottom: 0.5rem;
+}
+
+.letter .date {
+    color: #666;
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+    font-style: italic;
+}
+
+.letter-content {
+    font-size: 1.05rem;
+    line-height: 1.8;
+    color: #444;
+}
+
+.letter-content p {
+    margin-bottom: 1.2rem;
+}
+
+.letter-content p:last-child {
+    margin-bottom: 0;
+}
+
+.letter-content ul {
+    margin: 1.2rem 0;
+    padding-left: 2rem;
+    list-style-type: disc;
+}
+
+.letter-content li {
+    margin-bottom: 0.15rem;
+    line-height: 1.6;
+}
+
+.letter-content li:last-child {
+    margin-bottom: 0;
+}
+
+footer {
+    background-color: #1a1a1a;
+    color: #fff;
+    text-align: center;
+    padding: 2rem 0;
+    margin-top: 4rem;
+}
+
+footer p {
+    opacity: 0.8;
+    font-size: 0.9rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    header h1 {
+        font-size: 2rem;
+    }
+
+    .subtitle {
+        font-size: 1rem;
+    }
+
+    .letter {
+        padding: 1.5rem;
+    }
+
+    .letter h2 {
+        font-size: 1.5rem;
+    }
+
+    .letter-content {
+        font-size: 1rem;
+    }
+}
