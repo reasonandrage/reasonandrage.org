@@ -1,0 +1,4 @@
+#ignore setup files
+SETUP.md
+#ignore .env file
+.env
