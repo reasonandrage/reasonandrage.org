@@ -20,6 +20,8 @@ function markdownToHtml(markdown) {
       let processedContent = listContent;
       processedContent = processedContent.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
       processedContent = processedContent.replace(/(?<!\*)\*([^*]+?)\*(?!\*)/g, '<em>$1</em>');
+      processedContent = processedContent.replace(/~~(.+?)~~/g, '<del>$1</del>');
+      processedContent = processedContent.replace(/\+\+(.+?)\+\+/g, '<u>$1</u>');
       result.push(`<li>${processedContent}</li>`);
     } else {
       // Close list if we were in one
@@ -34,6 +36,8 @@ function markdownToHtml(markdown) {
         // Process inline formatting
         processedLine = processedLine.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
         processedLine = processedLine.replace(/(?<!\*)\*([^*]+?)\*(?!\*)/g, '<em>$1</em>');
+        processedLine = processedLine.replace(/~~(.+?)~~/g, '<del>$1</del>');
+        processedLine = processedLine.replace(/\+\+(.+?)\+\+/g, '<u>$1</u>');
         result.push(`<p>${processedLine}</p>`);
       }
     }
