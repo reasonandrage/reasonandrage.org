@@ -161,7 +161,61 @@
         .instructions li {
             margin-bottom: 0.5rem;
         }
+
+        .preview-container {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 1.5rem;
+            min-height: 200px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .preview-container .letter-preview {
+            font-size: 1.05rem;
+            line-height: 1.8;
+            color: #444;
+        }
+
+        .preview-container .letter-preview h2 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+            color: #1a1a1a;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 0.5rem;
+        }
+
+        .preview-container .letter-preview .date {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+            font-style: italic;
+        }
+
+        .preview-container .letter-preview p {
+            margin-bottom: 1.2rem;
+        }
+
+        .preview-container .letter-preview ul {
+            margin: 1.2rem 0;
+            padding-left: 2rem;
+            list-style-type: disc;
+        }
+
+        .preview-container .letter-preview li {
+            margin-bottom: 0.15rem;
+            line-height: 1.6;
+        }
+
+        .preview-empty {
+            color: #999;
+            font-style: italic;
+            text-align: center;
+            padding: 2rem;
+        }
     </style>
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
 <body>
     <header>
@@ -214,6 +268,17 @@
                     </div>
                 </div>
 
+                <div class="form-group">
+                    <label>Preview</label>
+                    <div id="preview" class="preview-container"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>Verification</label>
+                    <div class="cf-turnstile" data-sitekey="YOUR_SITE_KEY" data-theme="light"></div>
+                    <small style="color: #666; display: block; margin-top: 0.5rem;">Please complete the verification to submit your letter.</small>
+                </div>
+
                 <button type="submit" class="submit-btn" id="submitBtn">Submit Letter</button>
             </form>
         </div>
@@ -228,6 +293,103 @@
     <script>
         // Set today's date as default
         document.getElementById('date').valueAsDate = new Date();
+
+        // Markdown to HTML converter (matches server-side logic)
+        function markdownToHtml(markdown) {
+            if (!markdown.trim()) return '';
+            
+            const lines = markdown.split('\n');
+            const result = [];
+            let inList = false;
+            
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                
+                // Check if this is a list item
+                if (line.match(/^[-*]\s+(.+)$/)) {
+                    const listContent = line.replace(/^[-*]\s+/, '');
+                    if (!inList) {
+                        result.push('<ul>');
+                        inList = true;
+                    }
+                    // Process inline formatting
+                    let processedContent = listContent;
+                    processedContent = processedContent.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+                    processedContent = processedContent.replace(/(?<!\*)\*([^*]+?)\*(?!\*)/g, '<em>$1</em>');
+                    result.push(`<li>${processedContent}</li>`);
+                } else {
+                    // Close list if we were in one
+                    if (inList) {
+                        result.push('</ul>');
+                        inList = false;
+                    }
+                    
+                    // Process paragraph (skip empty lines)
+                    if (line) {
+                        let processedLine = line;
+                        // Process inline formatting
+                        processedLine = processedLine.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+                        processedLine = processedLine.replace(/(?<!\*)\*([^*]+?)\*(?!\*)/g, '<em>$1</em>');
+                        result.push(`<p>${processedLine}</p>`);
+                    }
+                }
+            }
+            
+            // Close list if still open
+            if (inList) {
+                result.push('</ul>');
+            }
+            
+            return result.join('\n');
+        }
+
+        // Update preview
+        function updatePreview() {
+            const title = document.getElementById('title').value;
+            const date = document.getElementById('date').value;
+            const content = document.getElementById('content').value;
+            const preview = document.getElementById('preview');
+
+            if (!title && !content) {
+                preview.innerHTML = '<div class="preview-empty">Preview will appear here as you type...</div>';
+                return;
+            }
+
+            const formattedDate = date ? new Date(date).toLocaleDateString('en-US', { 
+                month: 'numeric', 
+                day: 'numeric', 
+                year: 'numeric' 
+            }) : '';
+
+            const htmlContent = markdownToHtml(content);
+            
+            preview.innerHTML = `
+                <div class="letter-preview">
+                    ${title ? `<h2>${escapeHtml(title)}</h2>` : ''}
+                    ${formattedDate ? `<p class="date">Date: ${formattedDate}</p>` : ''}
+                    ${htmlContent || '<p class="preview-empty">Start typing your letter...</p>'}
+                </div>
+            `;
+        }
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        // Update preview on input
+        document.getElementById('title').addEventListener('input', updatePreview);
+        document.getElementById('date').addEventListener('input', updatePreview);
+        document.getElementById('content').addEventListener('input', updatePreview);
+        
+        // Initial preview
+        updatePreview();
 
         // Toolbar button handlers
         const toolbarButtons = document.querySelectorAll('.toolbar-btn');
@@ -280,20 +442,50 @@
             submitBtn.textContent = 'Submitting...';
             messageDiv.style.display = 'none';
 
+            // Get Turnstile token
+            const turnstileToken = document.querySelector('[name="cf-turnstile-response"]')?.value || 
+                                   document.querySelector('.cf-turnstile')?.dataset.response;
+            if (!turnstileToken) {
+                messageDiv.className = 'message error';
+                messageDiv.textContent = 'Please complete the verification challenge';
+                messageDiv.style.display = 'block';
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Letter';
+                return;
+            }
+
             const formData = {
                 title: document.getElementById('title').value,
                 date: document.getElementById('date').value,
-                content: document.getElementById('content').value
+                content: document.getElementById('content').value,
+                turnstile_token: turnstileToken
             };
 
             try {
-                const response = await fetch('/api/submit', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(formData)
-                });
+                // Try relative path first, then absolute if that fails
+                let apiUrl = '/api/submit';
+                let response;
+                
+                try {
+                    response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(formData)
+                    });
+                } catch (fetchError) {
+                    // If relative path fails, try with full path
+                    console.error('Fetch error:', fetchError);
+                    apiUrl = window.location.origin + '/api/submit';
+                    response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(formData)
+                    });
+                }
 
                 const result = await response.json();
 

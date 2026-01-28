@@ -86,12 +86,44 @@ function generateBranchName(title) {
     .substring(0, 50) + '-' + Date.now().toString().slice(-6);
 }
 
+// Verify Cloudflare Turnstile token
+async function verifyTurnstile(token, secret, ip) {
+  const response = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      secret: secret,
+      response: token,
+      remoteip: ip
+    })
+  });
+  
+  const result = await response.json();
+  return result.success === true;
+}
+
 export async function onRequestPost(context) {
   const { request, env } = context;
   
   try {
     const data = await request.json();
-    const { title, date, content } = data;
+    const { title, date, content, turnstile_token } = data;
+
+    // Verify Turnstile token
+    const TURNSTILE_SECRET = env.TURNSTILE_SECRET_KEY;
+    if (TURNSTILE_SECRET) {
+      const clientIP = request.headers.get('CF-Connecting-IP') || '127.0.0.1';
+      const isValid = await verifyTurnstile(turnstile_token, TURNSTILE_SECRET, clientIP);
+      
+      if (!isValid) {
+        return new Response(JSON.stringify({ error: 'Verification failed. Please try again.' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+    }
 
     if (!title || !date || !content) {
       return new Response(JSON.stringify({ error: 'Missing required fields' }), {
@@ -233,7 +265,12 @@ export async function onRequestPost(context) {
       pr_number: prData.number
     }), {
       status: 200,
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type'
+      }
     });
 
   } catch (error) {
@@ -242,7 +279,24 @@ export async function onRequestPost(context) {
       error: error.message || 'An error occurred while processing your submission'
     }), {
       status: 500,
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type'
+      }
     });
   }
+}
+
+// Handle OPTIONS for CORS
+export async function onRequestOptions() {
+  return new Response(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type'
+    }
+  });
 }

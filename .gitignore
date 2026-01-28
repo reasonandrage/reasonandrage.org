@@ -1,4 +1,5 @@
 #ignore setup files
 SETUP.md
+TURNSTILE_SETUP.md
 #ignore .env file
 .env
