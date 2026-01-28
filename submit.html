@@ -428,6 +428,9 @@
                 textarea.focus();
                 const newPos = start + replacement.length;
                 textarea.setSelectionRange(newPos, newPos);
+                
+                // Update preview after inserting markup
+                updatePreview();
             });
         });
 
